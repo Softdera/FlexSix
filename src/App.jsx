@@ -5,19 +5,31 @@ import './App.css';
 const VirtualDOMExample = () => (
   <div>
     <h1>Virtual DOM</h1>
-    <p>The Virtual DOM allows React to efficiently update the UI by comparing changes in memory before applying them to the actual DOM.</p>
+    <p>
+      The Virtual DOM allows React to efficiently update the UI by comparing
+      changes in memory before applying them to the actual DOM.
+    </p>
   </div>
 );
 
 // Product Component (Props Example)
-const Product = ({ product, addToCart }) => (
+const Product = ({ product, addToCart, updateProductPrice }) => (
   <div style={{ marginBottom: '10px' }}>
-    <span>{product.name} - ${product.price}</span>
+    <span>
+      {product.name} - ${product.price}
+    </span>
     <button
       onClick={() => addToCart(product)}
       style={{ marginLeft: '10px', padding: '5px 10px' }}
     >
       Add to Cart
+    </button>
+    {/* Example button to update product price using a PUT call */}
+    <button
+      onClick={() => updateProductPrice(product.id)}
+      style={{ marginLeft: '10px', padding: '5px 10px' }}
+    >
+      Update Price
     </button>
   </div>
 );
@@ -25,7 +37,9 @@ const Product = ({ product, addToCart }) => (
 // CartItem Component
 const CartItem = ({ item, removeFromCart }) => (
   <div style={{ marginBottom: '10px' }}>
-    <span>{item.name} - ${item.price}</span>
+    <span>
+      {item.name} - ${item.price}
+    </span>
     <button
       onClick={() => removeFromCart(item.id)}
       style={{ marginLeft: '10px', padding: '5px 10px' }}
@@ -78,25 +92,76 @@ const EventHandlerExample = () => {
   );
 };
 
-// Product List Component
+// Product List Component with API calls
 const ProductList = () => {
-  const [products, setProducts] = useState([
-    { id: 1, name: 'Product A', price: 50 },
-    { id: 2, name: 'Product B', price: 100 },
-    { id: 3, name: 'Product C', price: 150 },
-  ]);
-
+  const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
   const [search, setSearch] = useState('');
 
-  // Add to Cart Function
+  // GET: Fetch products when the component mounts
+  useEffect(() => {
+    fetch('https://api.example.com/products') // Replace with your GET endpoint
+      .then((response) => response.json())
+      .then((data) => setProducts(data))
+      .catch((error) => console.error('Error fetching products:', error));
+  }, []);
+
+  // POST: Add to Cart Function
   const addToCart = (product) => {
-    setCart([...cart, product]);
+    // Simulate POST to add the product to a remote cart
+    fetch('https://api.example.com/cart', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(product),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        // Assuming the API returns the added item
+        setCart([...cart, data]);
+      })
+      .catch((error) => console.error('Error adding to cart:', error));
   };
 
-  // Remove from Cart Function
+  // DELETE: Remove from Cart Function
   const removeFromCart = (id) => {
-    setCart(cart.filter((item) => item.id !== id));
+    // Simulate DELETE request to remove the product from a remote cart
+    fetch(`https://api.example.com/cart/${id}`, {
+      method: 'DELETE',
+    })
+      .then((response) => {
+        if (response.ok) {
+          setCart(cart.filter((item) => item.id !== id));
+        } else {
+          console.error('Error deleting from cart');
+        }
+      })
+      .catch((error) => console.error('Error removing from cart:', error));
+  };
+
+  // PUT: Update a product's price (example function)
+  const updateProductPrice = (id) => {
+    // For demonstration, we'll increase the price by 10
+    const productToUpdate = products.find((p) => p.id === id);
+    if (!productToUpdate) return;
+
+    const updatedProduct = { ...productToUpdate, price: productToUpdate.price + 10 };
+
+    // Simulate PUT request to update the product
+    fetch(`https://api.example.com/products/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedProduct),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        // Update the product in the local state after successful PUT
+        setProducts(
+          products.map((product) =>
+            product.id === id ? { ...product, price: data.price } : product
+          )
+        );
+      })
+      .catch((error) => console.error('Error updating product:', error));
   };
 
   // Filter Products by Search
@@ -120,7 +185,12 @@ const ProductList = () => {
       {/* Product List */}
       <div>
         {filteredProducts.map((product) => (
-          <Product key={product.id} product={product} addToCart={addToCart} />
+          <Product
+            key={product.id}
+            product={product}
+            addToCart={addToCart}
+            updateProductPrice={updateProductPrice}
+          />
         ))}
       </div>
 
