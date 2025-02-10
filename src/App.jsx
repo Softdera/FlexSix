@@ -1,5 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
+
+function useFetch(url) {
+  // useState: Managing data state and loading state.
+  const [data, setData] = useState([]);      
+  const [loading, setLoading] = useState(true);
+
+  // useEffect: Fetching data when the URL changes.
+  useEffect(() => {
+    fetch(url)
+      .then((response) => response.json())
+      .then((data) => {
+        setData(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error fetching data:', error);
+        setLoading(false);
+      });
+  }, [url]); 
+
+  // Return data, a setter for data, and the loading state.
+  return { data, setData, loading };
+}
 
 // Virtual DOM Example
 const VirtualDOMExample = () => (
@@ -24,7 +47,6 @@ const Product = ({ product, addToCart, updateProductPrice }) => (
     >
       Add to Cart
     </button>
-    {/* Example button to update product price using a PUT call */}
     <button
       onClick={() => updateProductPrice(product.id)}
       style={{ marginLeft: '10px', padding: '5px 10px' }}
@@ -49,13 +71,13 @@ const CartItem = ({ item, removeFromCart }) => (
   </div>
 );
 
-// Lifecycle Component Example
+// Lifecycle Component Example (Class Component)
 class LifecycleExample extends React.Component {
   state = { data: null };
 
   componentDidMount() {
     console.log('Component mounted!');
-    // Simulating data fetch
+    // Simulate a data fetch after 1 second.
     setTimeout(() => this.setState({ data: 'Hello, World!' }), 1000);
   }
 
@@ -72,7 +94,7 @@ class LifecycleExample extends React.Component {
   }
 }
 
-// Fragment Example
+
 const FragmentExample = () => (
   <>
     <h1>Fragment Example</h1>
@@ -80,10 +102,9 @@ const FragmentExample = () => (
   </>
 );
 
-// Event Handlers Example
+
 const EventHandlerExample = () => {
   const handleClick = () => alert('Button clicked!');
-
   return (
     <div>
       <h1>Event Handlers Example</h1>
@@ -92,61 +113,55 @@ const EventHandlerExample = () => {
   );
 };
 
-// Product List Component with API calls
+
 const ProductList = () => {
-  const [products, setProducts] = useState([]);
+  // Custom Hook: useFetch returns products data and a setter (setData) for products.
+  const { data: products, setData: setProducts, loading } = useFetch(
+    'https://api.example.com/products'
+  );
+
   const [cart, setCart] = useState([]);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState('');     
 
-  // GET: Fetch products when the component mounts
+  const searchInputRef = useRef(null);
+
   useEffect(() => {
-    fetch('https://api.example.com/products') // Replace with your GET endpoint
-      .then((response) => response.json())
-      .then((data) => setProducts(data))
-      .catch((error) => console.error('Error fetching products:', error));
-  }, []);
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, []); 
 
-  // POST: Add to Cart Function
+  // Function to add a product to the cart.
   const addToCart = (product) => {
-    // Simulate POST to add the product to a remote cart
     fetch('https://api.example.com/cart', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(product),
     })
       .then((response) => response.json())
-      .then((data) => {
-        // Assuming the API returns the added item
-        setCart([...cart, data]);
-      })
+      .then((data) => setCart([...cart, data]))
       .catch((error) => console.error('Error adding to cart:', error));
   };
 
-  // DELETE: Remove from Cart Function
+  // Function to remove a product from the cart.
   const removeFromCart = (id) => {
-    // Simulate DELETE request to remove the product from a remote cart
     fetch(`https://api.example.com/cart/${id}`, {
       method: 'DELETE',
     })
       .then((response) => {
         if (response.ok) {
           setCart(cart.filter((item) => item.id !== id));
-        } else {
-          console.error('Error deleting from cart');
         }
       })
       .catch((error) => console.error('Error removing from cart:', error));
   };
 
-  // PUT: Update a product's price (example function)
+  // Function to update a product's price.
   const updateProductPrice = (id) => {
-    // For demonstration, we'll increase the price by 10
     const productToUpdate = products.find((p) => p.id === id);
     if (!productToUpdate) return;
-
     const updatedProduct = { ...productToUpdate, price: productToUpdate.price + 10 };
 
-    // Simulate PUT request to update the product
     fetch(`https://api.example.com/products/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -154,7 +169,6 @@ const ProductList = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        // Update the product in the local state after successful PUT
         setProducts(
           products.map((product) =>
             product.id === id ? { ...product, price: data.price } : product
@@ -164,49 +178,58 @@ const ProductList = () => {
       .catch((error) => console.error('Error updating product:', error));
   };
 
-  // Filter Products by Search
+  // Filtering products based on search input.
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(search.toLowerCase())
   );
 
+  if (loading) return <p>Loading products...</p>;
+
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', padding: '20px' }}>
       <h1>Product List</h1>
-
-      {/* Search Bar */}
       <input
         type="text"
         placeholder="Search products..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
+        ref={searchInputRef}  
         style={{ marginBottom: '20px', padding: '10px', width: '300px' }}
       />
 
-      {/* Product List */}
+      {/* Display Products */}
       <div>
-        {filteredProducts.map((product) => (
-          <Product
-            key={product.id}
-            product={product}
-            addToCart={addToCart}
-            updateProductPrice={updateProductPrice}
-          />
-        ))}
+        {filteredProducts.length > 0 ? (
+          filteredProducts.map((product) => (
+            <Product
+              key={product.id}
+              product={product}
+              addToCart={addToCart}
+              updateProductPrice={updateProductPrice}
+            />
+          ))
+        ) : (
+          <p>No products found.</p>
+        )}
       </div>
 
-      {/* Cart */}
+      {/* Shopping Cart */}
       <h2>Shopping Cart</h2>
       <div>
-        {cart.map((item) => (
-          <CartItem key={item.id} item={item} removeFromCart={removeFromCart} />
-        ))}
-        {cart.length === 0 && <p>Your cart is empty.</p>}
+        {cart.length > 0 ? (
+          cart.map((item) => (
+            <CartItem key={item.id} item={item} removeFromCart={removeFromCart} />
+          ))
+        ) : (
+          <p>Your cart is empty.</p>
+        )}
       </div>
     </div>
   );
 };
 
-// Main Component to Render All Examples
+
+// Main App Component
 const App = () => {
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', padding: '20px' }}>
