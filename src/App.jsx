@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 
-// =====================================================
 // Custom Hook: useFetch (uses async/await)
-// =====================================================
 function useFetch(url) {
   // useState: Manage data and loading state.
   const [data, setData] = useState([]);       // <-- data state
@@ -28,9 +26,7 @@ function useFetch(url) {
   return { data, setData, loading };
 }
 
-// =====================================================
 // Virtual DOM Example
-// =====================================================
 const VirtualDOMExample = () => (
   <div>
     <h1>Virtual DOM</h1>
@@ -41,9 +37,7 @@ const VirtualDOMExample = () => (
   </div>
 );
 
-// =====================================================
 // Product Component (Props Example)
-// =====================================================
 const Product = ({ product, addToCart, updateProductPrice }) => (
   <div style={{ marginBottom: '10px' }}>
     <span>{product.name} - ${product.price}</span>
@@ -62,9 +56,7 @@ const Product = ({ product, addToCart, updateProductPrice }) => (
   </div>
 );
 
-// =====================================================
 // CartItem Component
-// =====================================================
 const CartItem = ({ item, removeFromCart }) => (
   <div style={{ marginBottom: '10px' }}>
     <span>{item.name} - ${item.price}</span>
@@ -77,9 +69,8 @@ const CartItem = ({ item, removeFromCart }) => (
   </div>
 );
 
-// =====================================================
 // Lifecycle Component Example (Class Component)
-// =====================================================
+
 class LifecycleExample extends React.Component {
   state = { data: null };
 
@@ -102,9 +93,7 @@ class LifecycleExample extends React.Component {
   }
 }
 
-// =====================================================
 // Fragment Example
-// =====================================================
 const FragmentExample = () => (
   <>
     <h1>Fragment Example</h1>
@@ -112,9 +101,7 @@ const FragmentExample = () => (
   </>
 );
 
-// =====================================================
 // Event Handlers Example
-// =====================================================
 const EventHandlerExample = () => {
   const handleClick = () => alert('Button clicked!');
   return (
@@ -125,9 +112,7 @@ const EventHandlerExample = () => {
   );
 };
 
-// =====================================================
 // ProductList Component (uses custom hook, useState, useEffect, useRef, async/await)
-// =====================================================
 const ProductList = () => {
   // Custom Hook: useFetch returns products, setData (as setProducts), and loading state.
   const { data: products, setData: setProducts, loading } = useFetch(
@@ -246,9 +231,7 @@ const ProductList = () => {
   );
 };
 
-// =====================================================
 // New Component: AddProductForm (uses FormData, async/await, and useState)
-// =====================================================
 const AddProductForm = () => {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
@@ -303,16 +286,13 @@ const AddProductForm = () => {
   );
 };
 
-// =====================================================
 // New Function: simulateDelay (returns a promise)
-// =====================================================
 const simulateDelay = (ms) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-// =====================================================
+
 // New Component: PromiseExample (demonstrates a promise and async/await)
-// =====================================================
 const PromiseExample = () => {
   const [status, setStatus] = useState('Waiting...');
 
@@ -333,9 +313,7 @@ const PromiseExample = () => {
   );
 };
 
-// =====================================================
 // Main App Component
-// =====================================================
 const App = () => {
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', padding: '20px' }}>
@@ -352,9 +330,7 @@ const App = () => {
   );
 };
 
-// =====================================================
 // New Component: JsonDisplay (displays a JSON object)
-// =====================================================
 const JsonDisplay = () => {
   // A sample JSON object.
   const sampleJson = {
